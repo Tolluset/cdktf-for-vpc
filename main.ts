@@ -1,5 +1,5 @@
-import { Construct } from "constructs";
-import { App, TerraformStack } from "cdktf";
+import { Construct, IConstruct } from "constructs";
+import { App, TerraformStack, Aspects, IAspect } from "cdktf";
 import {
   vpc,
   provider,
@@ -9,6 +9,33 @@ import {
   route,
   routeTableAssociation,
 } from "@cdktf/provider-aws";
+
+const NOW = new Date().toLocaleString("ko-KR", { timeZone: "Asia/Seoul" });
+
+type TaggableConstruct = IConstruct & {
+  tags?: { [key: string]: string };
+  tagsInput?: { [key: string]: string };
+};
+
+function isTaggableConstruct(x: IConstruct): x is TaggableConstruct {
+  return "tags" in x && "tagsInput" in x;
+}
+
+class Tagged implements IAspect {
+  constructor(private tags: Record<string, string>) {}
+
+  visit(node: IConstruct): void {
+    if (isTaggableConstruct(node)) {
+      const currentTags = node.tagsInput || {};
+      node.tags = {
+        Name: node.node.id,
+        CreatedAt: NOW,
+        ...this.tags,
+        ...currentTags,
+      };
+    }
+  }
+}
 
 class VpcStack extends TerraformStack {
   constructor(scope: Construct, id: string) {
@@ -32,14 +59,14 @@ class VpcStack extends TerraformStack {
 
     const publicSubnetA = new subnet.Subnet(this, `${id}-public-subnet-a`, {
       vpcId: newVpc.id,
-      availabilityZone: "ap-southeast-2a",
+      availabilityZone: "ap-northeast-2a",
       mapPublicIpOnLaunch: true,
       cidrBlock: "10.0.1.0/24",
     });
 
     const publicSubnetC = new subnet.Subnet(this, `${id}-public-subnet-c`, {
       vpcId: newVpc.id,
-      availabilityZone: "ap-southeast-2c",
+      availabilityZone: "ap-northeast-2c",
       mapPublicIpOnLaunch: true,
       cidrBlock: "10.0.3.0/24",
     });
@@ -78,13 +105,13 @@ class VpcStack extends TerraformStack {
 
     const privateSubnetA = new subnet.Subnet(this, `${id}-private-subnet-a`, {
       vpcId: newVpc.id,
-      availabilityZone: "ap-southeast-2a",
+      availabilityZone: "ap-northeast-2a",
       cidrBlock: "10.0.101.0/24",
     });
 
     const privateSubnetC = new subnet.Subnet(this, `${id}-private-subnet-c`, {
       vpcId: newVpc.id,
-      availabilityZone: "ap-southeast-2c",
+      availabilityZone: "ap-northeast-2c",
       cidrBlock: "10.0.103.0/24",
     });
 
@@ -113,6 +140,8 @@ class VpcStack extends TerraformStack {
         subnetId: privateSubnetC.id,
       }
     );
+
+    Aspects.of(this).add(new Tagged({ CreatedBy: "cdktf", Project: id }));
   }
 }
 
