@@ -1,0 +1,138 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Vpc stack compare snapshots 1`] = `
+"{
+  "provider": {
+    "aws": [
+      {
+        "region": "ap-northeast-2"
+      }
+    ]
+  },
+  "resource": {
+    "aws_internet_gateway": {
+      "test-internet-gateway": {
+        "tags": {
+          "CreatedBy": "cdktf",
+          "Name": "test-internet-gateway",
+          "Project": "cdktf-for-vpc",
+          "how": "it"
+        },
+        "vpc_id": "\${aws_vpc.test-vpc.id}"
+      }
+    },
+    "aws_route": {
+      "test-route-public-to-internet-gateway": {
+        "destination_cidr_block": "0.0.0.0/0",
+        "gateway_id": "\${aws_internet_gateway.test-internet-gateway.id}",
+        "route_table_id": "\${aws_route_table.test-public-route-table.id}"
+      }
+    },
+    "aws_route_table": {
+      "test-private-route-table": {
+        "tags": {
+          "CreatedBy": "cdktf",
+          "Name": "test-private-route-table",
+          "Project": "cdktf-for-vpc",
+          "how": "it"
+        },
+        "vpc_id": "\${aws_vpc.test-vpc.id}"
+      },
+      "test-public-route-table": {
+        "tags": {
+          "CreatedBy": "cdktf",
+          "Name": "test-public-route-table",
+          "Project": "cdktf-for-vpc",
+          "how": "it"
+        },
+        "vpc_id": "\${aws_vpc.test-vpc.id}"
+      }
+    },
+    "aws_route_table_association": {
+      "test-route-table-association-private-subnet-a": {
+        "route_table_id": "\${aws_route_table.test-private-route-table.id}",
+        "subnet_id": "\${aws_subnet.test-private-subnet-a.id}"
+      },
+      "test-route-table-association-private-subnet-c": {
+        "route_table_id": "\${aws_route_table.test-private-route-table.id}",
+        "subnet_id": "\${aws_subnet.test-private-subnet-c.id}"
+      },
+      "test-route-table-association-public-subnet-a": {
+        "route_table_id": "\${aws_route_table.test-public-route-table.id}",
+        "subnet_id": "\${aws_subnet.test-public-subnet-a.id}"
+      },
+      "test-route-table-association-public-subnet-c": {
+        "route_table_id": "\${aws_route_table.test-public-route-table.id}",
+        "subnet_id": "\${aws_subnet.test-public-subnet-c.id}"
+      }
+    },
+    "aws_subnet": {
+      "test-private-subnet-a": {
+        "availability_zone": "ap-northeast-2a",
+        "cidr_block": "10.0.101.0/24",
+        "tags": {
+          "CreatedBy": "cdktf",
+          "Name": "test-private-subnet-a",
+          "Project": "cdktf-for-vpc",
+          "how": "it"
+        },
+        "vpc_id": "\${aws_vpc.test-vpc.id}"
+      },
+      "test-private-subnet-c": {
+        "availability_zone": "ap-northeast-2c",
+        "cidr_block": "10.0.103.0/24",
+        "tags": {
+          "CreatedBy": "cdktf",
+          "Name": "test-private-subnet-c",
+          "Project": "cdktf-for-vpc",
+          "how": "it"
+        },
+        "vpc_id": "\${aws_vpc.test-vpc.id}"
+      },
+      "test-public-subnet-a": {
+        "availability_zone": "ap-northeast-2a",
+        "cidr_block": "10.0.1.0/24",
+        "map_public_ip_on_launch": true,
+        "tags": {
+          "CreatedBy": "cdktf",
+          "Name": "test-public-subnet-a",
+          "Project": "cdktf-for-vpc",
+          "how": "it"
+        },
+        "vpc_id": "\${aws_vpc.test-vpc.id}"
+      },
+      "test-public-subnet-c": {
+        "availability_zone": "ap-northeast-2c",
+        "cidr_block": "10.0.3.0/24",
+        "map_public_ip_on_launch": true,
+        "tags": {
+          "CreatedBy": "cdktf",
+          "Name": "test-public-subnet-c",
+          "Project": "cdktf-for-vpc",
+          "how": "it"
+        },
+        "vpc_id": "\${aws_vpc.test-vpc.id}"
+      }
+    },
+    "aws_vpc": {
+      "test-vpc": {
+        "cidr_block": "10.0.0.0/16",
+        "tags": {
+          "CreatedBy": "cdktf",
+          "Name": "test-vpc",
+          "Project": "cdktf-for-vpc",
+          "how": "it"
+        }
+      }
+    }
+  },
+  "terraform": {
+    "required_providers": {
+      "aws": {
+        "source": "aws",
+        "version": "4.60.0"
+      }
+    }
+  }
+}"
+`;

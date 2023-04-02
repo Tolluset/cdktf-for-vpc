@@ -1,89 +1,62 @@
-// Copyright (c) HashiCorp, Inc
-// SPDX-License-Identifier: MPL-2.0
-import "cdktf/lib/testing/adapters/jest"; // Load types for expect matchers
-// import { Testing } from "cdktf";
+import "cdktf/lib/testing/adapters/jest";
+import { TerraformStack, Testing } from "cdktf";
+import {
+  vpc,
+  provider,
+  subnet,
+  internetGateway,
+  routeTable,
+} from "@cdktf/provider-aws";
+import { Tagged, VpcStack } from "../main";
 
-describe("My CDKTF Application", () => {
-  // The tests below are example tests, you can find more information at
-  // https://cdk.tf/testing
-  it.todo("should be tested");
+const NOW = "2023. 3. 31. 오전 11:43:10";
+const slots = [
+  new Tagged({ CreatedBy: "cdktf", Project: "cdktf-for-vpc" }, NOW),
+  new Tagged({ how: "it", Project: "cdktf-for-vpc" }, NOW),
+];
 
-  // // All Unit tests test the synthesised terraform code, it does not create real-world resources
-  // describe("Unit testing using assertions", () => {
-  //   it("should contain a resource", () => {
-  //     // import { Image,Container } from "./.gen/providers/docker"
-  //     expect(
-  //       Testing.synthScope((scope) => {
-  //         new MyApplicationsAbstraction(scope, "my-app", {});
-  //       })
-  //     ).toHaveResource(Container);
+describe("Vpc stack", () => {
+  it("should contain the follow resources", () => {
+    const app = Testing.app();
+    const stack = new VpcStack(app, "test", slots);
+    const synthesized = Testing.synth(stack);
 
-  //     expect(
-  //       Testing.synthScope((scope) => {
-  //         new MyApplicationsAbstraction(scope, "my-app", {});
-  //       })
-  //     ).toHaveResourceWithProperties(Image, { name: "ubuntu:latest" });
-  //   });
-  // });
+    expect(synthesized).toHaveProviderWithProperties(
+      provider.AwsProvider,
+      {
+        region: "ap-northeast-2",
+      }
+    );
+    expect(synthesized).toHaveResource(vpc.Vpc);
+    expect(synthesized).toHaveResource(subnet.Subnet);
+    expect(synthesized).toHaveResource(
+      internetGateway.InternetGateway
+    );
+    expect(synthesized).toHaveResource(routeTable.RouteTable);
+  });
 
-  // describe("Unit testing using snapshots", () => {
-  //   it("Tests the snapshot", () => {
-  //     const app = Testing.app();
-  //     const stack = new TerraformStack(app, "test");
+  it("compare snapshots", () => {
+    const app = Testing.app();
+    const stack = new VpcStack(app, "test", slots);
 
-  //     new TestProvider(stack, "provider", {
-  //       accessKey: "1",
-  //     });
+    expect(Testing.synth(stack)).toMatchSnapshot();
+  });
 
-  //     new TestResource(stack, "test", {
-  //       name: "my-resource",
-  //     });
+  it("to be valid terraform stack", () => {
+    const app = Testing.app();
+    const stack = new TerraformStack(app, "test");
 
-  //     expect(Testing.synth(stack)).toMatchSnapshot();
-  //   });
+    new VpcStack(stack, "test-app", slots);
 
-  //   it("Tests a combination of resources", () => {
-  //     expect(
-  //       Testing.synthScope((stack) => {
-  //         new TestDataSource(stack, "test-data-source", {
-  //           name: "foo",
-  //         });
+    expect(Testing.fullSynth(stack)).toBeValidTerraform();
+  });
 
-  //         new TestResource(stack, "test-resource", {
-  //           name: "bar",
-  //         });
-  //       })
-  //     ).toMatchInlineSnapshot();
-  //   });
-  // });
+  it("to be planned", () => {
+    const app = Testing.app();
+    const stack = new TerraformStack(app, "test");
 
-  // describe("Checking validity", () => {
-  //   it("check if the produced terraform configuration is valid", () => {
-  //     const app = Testing.app();
-  //     const stack = new TerraformStack(app, "test");
+    new VpcStack(stack, "test-app", slots);
 
-  //     new TestDataSource(stack, "test-data-source", {
-  //       name: "foo",
-  //     });
-
-  //     new TestResource(stack, "test-resource", {
-  //       name: "bar",
-  //     });
-  //     expect(Testing.fullSynth(app)).toBeValidTerraform();
-  //   });
-
-  //   it("check if this can be planned", () => {
-  //     const app = Testing.app();
-  //     const stack = new TerraformStack(app, "test");
-
-  //     new TestDataSource(stack, "test-data-source", {
-  //       name: "foo",
-  //     });
-
-  //     new TestResource(stack, "test-resource", {
-  //       name: "bar",
-  //     });
-  //     expect(Testing.fullSynth(app)).toPlanSuccessfully();
-  //   });
-  // });
+    expect(Testing.fullSynth(stack)).toPlanSuccessfully();
+  });
 });
