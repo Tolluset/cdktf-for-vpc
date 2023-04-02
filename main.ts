@@ -21,24 +21,28 @@ function isTaggableConstruct(x: IConstruct): x is TaggableConstruct {
   return "tags" in x && "tagsInput" in x;
 }
 
-class Tagged implements IAspect {
-  constructor(private tags: Record<string, string>) {}
+export class Tagged implements IAspect {
+  constructor(
+    private tags: Record<string, string | number>,
+    private now?: string
+  ) {}
 
   visit(node: IConstruct): void {
     if (isTaggableConstruct(node)) {
       const currentTags = node.tagsInput || {};
       node.tags = {
         Name: node.node.id,
-        CreatedAt: NOW,
         ...this.tags,
         ...currentTags,
       };
+
+      if (this.now) node.tags.createdAt = this.now;
     }
   }
 }
 
-class VpcStack extends TerraformStack {
-  constructor(scope: Construct, id: string) {
+export class VpcStack extends TerraformStack {
+  constructor(scope: Construct, id: string, slots?: Array<IAspect>) {
     super(scope, id);
 
     new provider.AwsProvider(this, `${id}-aws-provider`, {
@@ -141,12 +145,18 @@ class VpcStack extends TerraformStack {
       }
     );
 
-    Aspects.of(this).add(new Tagged({ CreatedBy: "cdktf", Project: id }));
+    if (slots) {
+      slots.forEach((slot) => {
+        Aspects.of(this).add(slot);
+      });
+    }
   }
 }
 
 const app = new App();
 
-new VpcStack(app, "cdktf-for-vpc");
+new VpcStack(app, "cdktf-for-vpc", [
+  new Tagged({ CreatedBy: "cdktf", Project: "cdktf-for-vpc" }, NOW),
+]);
 
 app.synth();
